@@ -1,0 +1,51 @@
+version: '3.7'
+
+services:
+  proxy:
+    container_name: proxy.local.com
+    image: jwilder/nginx-proxy:latest
+    volumes:
+      - '/var/run/docker.sock:/tmp/docker.sock:ro'
+      - './proxy.conf:/etc/nginx/conf.d/my_proxy.conf:ro'
+    ports:
+      - '80:80'
+    restart: unless-stopped
+    networks:
+      main:
+        aliases:
+          - proxy.local.com
+
+  nest-api.local.com:
+    build: .
+    container_name: nest-api.local.com
+    depends_on:
+      - mariadb.local.com
+    volumes:
+      - './:/usr/src/app:rw'
+    ports:
+      - '8080:8080'
+      - '9229:9229'
+    env_file: .env
+    command: ['.s2i/bin/assemble']
+    networks:
+      main:
+        aliases:
+          - nest-api.local.com
+  
+  mariadb.local.com:
+    container_name: mariadb.local.com
+    image: mariadb:10.2.19
+    volumes:
+      - "./.data:/var/lib/mysql"
+    ports:
+      - '3306:3306'
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+    restart: unless-stopped
+    networks:
+      main:
+        aliases:
+          - mariadb.local.com
+
+networks:
+  main:

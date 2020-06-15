@@ -1,0 +1,11 @@
+#!/bin/bash
+
+if [[ " local localhost dev development developer " =~ " $ENV_ALIAS " ]]; then
+  if [ $DEBUG == 'true' ]; then
+    yarn start:debug
+  else
+    yarn start:dev
+  fi
+else
+  yarn start
+fi

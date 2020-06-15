@@ -1,0 +1,30 @@
+#!/bin/bash
+
+if [[ " local localhost dev development developer " =~ " $ENV_ALIAS " ]]; then
+  export IS_DEV_ENV=true
+else
+  export IS_DEV_ENV=false
+fi
+
+set -e
+
+if ! $IS_DEV_ENV; then
+  shopt -s dotglob
+  mv /tmp/src/* ./
+fi
+
+# install the latest version of Yarn
+touch .bash_profile
+# npm i -g yarn
+npm i -g @nestjs/cli
+source .bash_profile
+
+yarn config set network-timeout 600000
+
+yarn install
+
+if ! $IS_DEV_ENV; then
+  fix-permissions ./
+else
+  .s2i/bin/run
+fi
